@@ -1,30 +1,40 @@
 import { test, expect } from '@playwright/test';
 
-test('Test myDock login + Tasker', async ({ page }) => {
-    await page.goto('https://vyvoj.mydock.sab-apps.blogic.cz/');
+test.use({ ignoreHTTPSErrors: true });
 
-    const loginLocator = page.getByRole('textbox', { name: 'přihlašovací jméno' });
+test('Test local Tasker login + task edit', async ({ page, browserName }) => {
+    test.skip(browserName === 'webkit', 'Tento test nespouštět ve WebKit (Safari).');
+    await page.goto('http://vyvoj.mydock.lh:3002/web-mydock');
+
+    const loginTitleLocator = page.getByRole('heading', { name: 'Přihlášení' });
+    await expect(loginTitleLocator).toBeVisible({timeout: 120_000});
+
+    const locator = page.getByRole('button', { name: 'Přihlásit' });
+    await expect(locator).not.toBeVisible();
+
+    const loginLocator = page.getByRole('textbox', { name: 'Přihlášení' });
     await expect(loginLocator).toBeVisible();
     await loginLocator.click();
     await loginLocator.fill('majitel');
 
-    const passwordLocator = page.getByRole('textbox', { name: 'heslo' });
+    const passwordLocator = page.getByRole('textbox', { name: 'Heslo' });
     await expect(passwordLocator).toBeVisible();
     await passwordLocator.click();
     await passwordLocator.fill('majitel');
 
-    const buttonLocator = page.getByRole('button', { name: 'přihlásit' });
+    const buttonLocator = page.getByRole('button', { name: 'Přihlásit' });
     await expect(buttonLocator).toBeVisible();
     await buttonLocator.click();
 
-    const HSPLinkLocator = page.getByRole('link', { name: 'TESTOVACI HSP [majitel]' });
-    await expect(HSPLinkLocator).toBeVisible();
+    const dashboardTitleLocator = page.locator('header').getByText('Dashboard');
+    await expect(dashboardTitleLocator).toBeVisible({timeout: 120_000});
 
-    const taskerButtonLocator = page.getByRole('listitem').filter({ hasText: /^6$/ }).getByRole('link');
-    await taskerButtonLocator.click();
+    const taskerBtnLocator = page.getByRole('button', { name: 'Úkolovník' });
+    await expect(taskerBtnLocator).toBeVisible();
+    await taskerBtnLocator.click();
 
     const taskerTitleLocator = page.getByText('Úkolovník');
-    await expect(taskerTitleLocator).toBeVisible({timeout: 30_000});
+    await expect(taskerTitleLocator).toBeVisible({timeout: 120_000});
 
     const newTaskBtnLocator = page.getByRole('button', { name: 'Nový úkol' });
     await expect(newTaskBtnLocator).toBeVisible();
